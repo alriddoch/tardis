@@ -122,7 +122,11 @@ bool initGL()
   //Get vertex source
   const GLchar* vertexShaderSource[] =
   {
-    "#version 130\nin vec2 LVertexPos2D; void main() { gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1); }"
+    "#version 130\n"
+    "in vec2 LVertexPos2D;"
+    "void main() {"
+    "  gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);"
+    "}"
   };
 
   //Set vertex source
@@ -150,7 +154,11 @@ bool initGL()
   //Get fragment source
   const GLchar* fragmentShaderSource[] =
   {
-    "#version 130\nout vec4 LFragment; void main() { LFragment = vec4(1.0, 1.0, 1.0, 1.0); }"
+    "#version 130\n"
+    "out vec4 LFragment;"
+    "void main() {"
+    "  LFragment = vec4(1.0, 1.0, 0.0, 1.0);"
+    "}"
   };
 
   //Set fragment source
