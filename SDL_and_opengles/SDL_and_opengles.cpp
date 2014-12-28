@@ -52,78 +52,57 @@ GLuint gIBO = 0;
 
 bool init()
 {
-  //Initialization flag
-  bool success = true;
-
   //Initialize SDL
   if(SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-    success = false;
+    return false;
   }
-  else
+
+  printf("SDL init ok\n");
+  //Use OpenGL 3.1 core
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  //Create window
+  gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  if(gWindow == NULL)
   {
-    printf("SDL init ok\n");
-    //Use OpenGL 3.1 core
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    //Create window
-    gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-    if(gWindow == NULL)
-    {
-      printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
-      success = false;
-    }
-    else
-    {
-      printf("Create window ok\n");
-      //Create context
-      gContext = SDL_GL_CreateContext(gWindow);
-      if(gContext == NULL)
-      {
-        printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
-        success = false;
-      }
-      else
-      {
-        printf("Create context ok\n");
-        //Initialize GLEW
-#if 0
-        glewExperimental = GL_TRUE; 
-        GLenum glewError = glewInit();
-        if(glewError != GLEW_OK)
-        {
-          printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));
-        }
-#endif
-
-        //Use Vsync
-        if(SDL_GL_SetSwapInterval(1) < 0)
-        {
-          printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
-        }
-
-        //Initialize OpenGL
-        if(!initGL())
-        {
-          printf("Unable to initialize OpenGL!\n");
-          success = false;
-        }
-      }
-    }
+    printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+    return false;
   }
 
-  return success;
+  printf("Create window ok\n");
+  //Create context
+  gContext = SDL_GL_CreateContext(gWindow);
+  if(gContext == NULL)
+  {
+    printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
+    return false;
+  }
+
+  printf("Create context ok\n");
+
+  //Use Vsync
+  if(SDL_GL_SetSwapInterval(1) < 0)
+  {
+    printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
+  }
+
+  //Initialize OpenGL
+  if(!initGL())
+  {
+    printf("Unable to initialize OpenGL!\n");
+    return false;
+  }
+
+  return true;
 }
 
 bool initGL()
 {
-  //Success flag
-  bool success = true;
-
   //Generate program
   gProgramID = glCreateProgram();
 
@@ -135,7 +114,7 @@ bool initGL()
   {
 #if 1
     "#version 100\n"
-    "in vec2 LVertexPos2D;"
+    "uniform in vec2 LVertexPos2D;"
     "void main() {"
     "  gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);"
     "}"
@@ -163,108 +142,100 @@ bool initGL()
   {
     printf("Unable to compile vertex shader %d!\n", vertexShader);
     printShaderLog(vertexShader);
-        success = false;
+    return false;
   }
-  else
+
+  //Attach vertex shader to program
+  glAttachShader(gProgramID, vertexShader);
+
+
+  //Create fragment shader
+  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+  //Get fragment source
+  const GLchar* fragmentShaderSource[] =
   {
-    //Attach vertex shader to program
-    glAttachShader(gProgramID, vertexShader);
-
-
-    //Create fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    //Get fragment source
-    const GLchar* fragmentShaderSource[] =
-    {
 #if 0
-      "out vec4 LFragment;"
-      "void main() {"
-      " LFragment = vec4(1.0, 1.0, 1.0, 1.0);"
-      "}"
+    "out vec4 LFragment;"
+    "void main() {"
+    " LFragment = vec4(1.0, 1.0, 1.0, 1.0);"
+    "}"
 #else
-      "#version 100\n"
-      "varying lowp vec4 DestinationColor;"
-      "void main(void) {"
-      "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
-      "}"
+    "#version 100\n"
+    "varying lowp vec4 DestinationColor;"
+    "void main(void) {"
+    "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+    "}"
 #endif
-    };
+  };
 
-    //Set fragment source
-    glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
+  //Set fragment source
+  glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
 
-    //Compile fragment source
-    glCompileShader(fragmentShader);
+  //Compile fragment source
+  glCompileShader(fragmentShader);
 
-    //Check fragment shader for errors
-    GLint fShaderCompiled = GL_FALSE;
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
-    if(fShaderCompiled != GL_TRUE)
-    {
-      printf("Unable to compile fragment shader %d!\n", fragmentShader);
-      printShaderLog(fragmentShader);
-      success = false;
-    }
-    else
-    {
-      //Attach fragment shader to program
-      glAttachShader(gProgramID, fragmentShader);
-
-
-      //Link program
-      glLinkProgram(gProgramID);
-
-      //Check for errors
-      GLint programSuccess = GL_TRUE;
-      glGetProgramiv(gProgramID, GL_LINK_STATUS, &programSuccess);
-      if(programSuccess != GL_TRUE)
-      {
-        printf("Error linking program %d!\n", gProgramID);
-        printProgramLog(gProgramID);
-        success = false;
-      }
-      else
-      {
-        //Get vertex attribute location
-        gVertexPos2DLocation = glGetAttribLocation(gProgramID, "LVertexPos2D");
-        if(gVertexPos2DLocation == -1)
-        {
-          printf("LVertexPos2D is not a valid glsl program variable!\n");
-          success = false;
-        }
-        else
-        {
-          //Initialize clear color
-          glClearColor(0.f, 0.f, 0.f, 1.f);
-
-          //VBO data
-          GLfloat vertexData[] =
-          {
-            -0.5f, -0.5f,
-             0.5f, -0.5f,
-             0.5f,  0.5f,
-            -0.5f,  0.5f
-          };
-
-          //IBO data
-          GLuint indexData[] = { 0, 1, 2, 3 };
-
-          //Create VBO
-          glGenBuffers(1, &gVBO);
-          glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-          glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
-
-          //Create IBO
-          glGenBuffers(1, &gIBO);
-          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
-          glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
-        }
-      }
-    }
+  //Check fragment shader for errors
+  GLint fShaderCompiled = GL_FALSE;
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
+  if(fShaderCompiled != GL_TRUE)
+  {
+    printf("Unable to compile fragment shader %d!\n", fragmentShader);
+    printShaderLog(fragmentShader);
+    return false;
   }
+
+  //Attach fragment shader to program
+  glAttachShader(gProgramID, fragmentShader);
+
+
+  //Link program
+  glLinkProgram(gProgramID);
+
+  //Check for errors
+  GLint programSuccess = GL_TRUE;
+  glGetProgramiv(gProgramID, GL_LINK_STATUS, &programSuccess);
+  if(programSuccess != GL_TRUE)
+  {
+    printf("Error linking program %d!\n", gProgramID);
+    printProgramLog(gProgramID);
+    return false;
+  }
+
+  //Get vertex attribute location
+  gVertexPos2DLocation = glGetAttribLocation(gProgramID, "LVertexPos2D");
+  if(gVertexPos2DLocation == -1)
+  {
+    printf("LVertexPos2D is not a valid glsl program variable!\n");
+    return false;
+  }
+
+  //Initialize clear color
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+
+  //VBO data
+  GLfloat vertexData[] =
+  {
+    -0.5f, -0.5f,
+     0.5f, -0.5f,
+     0.5f,  0.5f,
+    -0.5f,  0.5f
+  };
+
+  //IBO data
+  GLuint indexData[] = { 0, 1, 2, 3 };
+
+  //Create VBO
+  glGenBuffers(1, &gVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+  glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+
+  //Create IBO
+  glGenBuffers(1, &gIBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
   
-  return success;
+  return true;
 }
 
 void handleKeys(unsigned char key, int x, int y)
@@ -307,7 +278,7 @@ void render()
     glDisableVertexAttribArray(gVertexPos2DLocation);
 
     //Unbind program
-    glUseProgram(NULL);
+    glUseProgram(GL_ZERO);
   }
 }
 
