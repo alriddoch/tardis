@@ -49,6 +49,7 @@ GLuint gProgramID = 0;
 GLint gVertexPos2DLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
+GLuint gVAO = 0;
 
 bool init()
 {
@@ -63,7 +64,7 @@ bool init()
   printf("SDL init ok\n");
   //Use OpenGL 3.1 core
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   //Create window
@@ -122,7 +123,7 @@ bool initGL()
   //Get vertex source
   const GLchar* vertexShaderSource[] =
   {
-    "#version 130\n"
+    "#version 140\n"
     "in vec2 LVertexPos2D;"
     "void main() {"
     "  gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);"
@@ -154,10 +155,9 @@ bool initGL()
   //Get fragment source
   const GLchar* fragmentShaderSource[] =
   {
-    "#version 130\n"
-    "out vec4 LFragment;"
+    "#version 140\n"
     "void main() {"
-    "  LFragment = vec4(1.0, 1.0, 0.0, 1.0);"
+    "  gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);"
     "}"
   };
 
@@ -224,6 +224,9 @@ bool initGL()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
   
+  glGenVertexArrays(1, &gVAO);
+  glBindVertexArray(gVAO);
+
   return true;
 }
 
