@@ -260,7 +260,7 @@ void render()
 
     //Set vertex data
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+    glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
     //Set index data and render
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
