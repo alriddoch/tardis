@@ -112,21 +112,11 @@ bool initGL()
   //Get vertex source
   const GLchar* vertexShaderSource[] =
   {
-#if 1
     "#version 100\n"
     "attribute vec2 LVertexPos2D;"
     "void main() {"
     "  gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);"
     "}"
-#else
-    "attribute vec4 Position;"
-    "attribute vec4 SourceColor;"
-    "varying vec4 DestinationColor;"
-    "void main(void) {"
-    "    DestinationColor = SourceColor;"
-    "    gl_Position = Position;"
-    "}"
-#endif
   };
 
   //Set vertex source
@@ -155,17 +145,10 @@ bool initGL()
   //Get fragment source
   const GLchar* fragmentShaderSource[] =
   {
-#if 0
-    "out vec4 LFragment;"
-    "void main() {"
-    " LFragment = vec4(1.0, 1.0, 1.0, 1.0);"
-    "}"
-#else
     "#version 100\n"
     "void main(void) {"
     "  gl_FragColor = vec4(1.0, 0.0, 1.0, 0.0);"
     "}"
-#endif
   };
 
   //Set fragment source
@@ -233,7 +216,12 @@ bool initGL()
   glGenBuffers(1, &gIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
-  
+
+  // These calls don't exist in ES, but are required by at least some
+  // implementations in the 3.x core (3.1 Mesa/DRI specifically)
+  // glGenVertexArrays(1, &gVAO);
+  // glBindVertexArray(gVAO);
+
   return true;
 }
 
