@@ -53,14 +53,13 @@ GLuint gVAO = 0;
 
 bool init()
 {
-  //Initialization flag
-
   //Initialize SDL
   if(SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
     return false;
   }
+
   printf("SDL init ok\n");
   //Use OpenGL 3.1 core
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -111,9 +110,6 @@ bool init()
 
 bool initGL()
 {
-  //Success flag
-  bool success = true;
-
   //Generate program
   gProgramID = glCreateProgram();
 
@@ -145,6 +141,7 @@ bool initGL()
     printShaderLog(vertexShader);
     return false;
   }
+
   //Attach vertex shader to program
   glAttachShader(gProgramID, vertexShader);
 
@@ -176,6 +173,7 @@ bool initGL()
     printShaderLog(fragmentShader);
     return false;
   }
+
   //Attach fragment shader to program
   glAttachShader(gProgramID, fragmentShader);
 
@@ -192,6 +190,7 @@ bool initGL()
     printProgramLog(gProgramID);
     return false;
   }
+
   //Get vertex attribute location
   gVertexPos2DLocation = glGetAttribLocation(gProgramID, "LVertexPos2D");
   if(gVertexPos2DLocation == -1)
@@ -199,6 +198,7 @@ bool initGL()
     printf("LVertexPos2D is not a valid glsl program variable!\n");
     return false;
   }
+
   //Initialize clear color
   glClearColor(0.f, 0.f, 0.f, 1.f);
 
@@ -223,7 +223,7 @@ bool initGL()
   glGenBuffers(1, &gIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
-  
+
   glGenVertexArrays(1, &gVAO);
   glBindVertexArray(gVAO);
 
