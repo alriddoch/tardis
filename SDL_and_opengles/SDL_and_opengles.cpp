@@ -146,7 +146,7 @@ bool initGL()
   const GLchar* fragmentShaderSource[] =
   {
     "#version 100\n"
-    "void main(void) {"
+    "void main() {"
     "  gl_FragColor = vec4(1.0, 0.0, 1.0, 0.0);"
     "}"
   };
