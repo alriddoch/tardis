@@ -120,7 +120,7 @@ bool initGL()
   const GLchar* vertexShaderSource[] =
   {
     "#version 140\n"
-    "in vec2 LVertexPos2D;"
+    "attribute vec2 LVertexPos2D;"
     "void main() {"
     "  gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);"
     "}"
